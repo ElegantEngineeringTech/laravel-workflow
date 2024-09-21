@@ -27,4 +27,14 @@ abstract class WorkflowDefinition
 
         return $workflow;
     }
+
+    public function shouldCancel(): bool
+    {
+        return false;
+    }
+
+    public function shouldRun(): bool
+    {
+        return true;
+    }
 }

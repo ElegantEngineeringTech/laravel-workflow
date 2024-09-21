@@ -257,8 +257,15 @@ class Workflow extends Model
         if (
             $this->isFinished() ||
             $this->isFailed() ||
-            $this->isCanceled()
+            $this->isCanceled() ||
+            ! $this->definition->shouldRun()
         ) {
+            return;
+        }
+
+        if ($this->definition->shouldCancel()) {
+            $this->markAsCanceled();
+
             return;
         }
 
