@@ -1,4 +1,4 @@
-# Scheduler based
+# Scheduler based Workflow for Laravel
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/elegantly/laravel-workflow.svg?style=flat-square)](https://packagist.org/packages/elegantly/laravel-workflow)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/elegantengineeringtech/laravel-workflow/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/elegantengineeringtech/laravel-workflow/actions?query=workflow%3Arun-tests+branch%3Amain)
@@ -16,34 +16,97 @@ composer require elegantly/laravel-workflow
 You can publish and run the migrations with:
 
 ```bash
-php artisan vendor:publish --tag="laravel-workflow-migrations"
+php artisan vendor:publish --tag="workflow-migrations"
 php artisan migrate
 ```
 
 You can publish the config file with:
 
 ```bash
-php artisan vendor:publish --tag="laravel-workflow-config"
+php artisan vendor:publish --tag="workflow-config"
 ```
 
 This is the contents of the published config file:
 
 ```php
 return [
+
+    'queue' => env('WORKFLOW_QUEUE'),
+
+    'queue_connection' => env('WORKFLOW_QUEUE_CONNECTION'),
+
 ];
-```
-
-Optionally, you can publish the views using
-
-```bash
-php artisan vendor:publish --tag="laravel-workflow-views"
 ```
 
 ## Usage
 
+### Defining your workflows
+
+Define a workflow in a class like this one:
+
 ```php
-$laravelWorkflow = new Elegantly\Workflow();
-echo $laravelWorkflow->echoPhrase('Hello, Elegantly!');
+namespace App\Workflows;
+
+use Carbon\CarbonInterval;
+use Elegantly\Workflow\Models\Workflow;
+use Elegantly\Workflow\WorkflowDefinition;
+use Elegantly\Workflow\WorkflowStep;
+use Illuminate\Support\Collection;
+
+class WelcomeUserWorkflow extends WorkflowDefinition
+{
+    public function __construct(
+        public User $user
+    ) {
+        //
+    }
+
+    public function steps(Workflow $workflow): Collection
+    {
+        return collect()
+            ->put(
+                'welcome-email',
+                WorkflowStep::make($workflow)
+                    ->action(function (): void {
+                        // send an email to the user
+                    })
+            )
+            ->put(
+                'export-user',
+                WorkflowStep::make($workflow)
+                    ->action(new ExportUserToCrmJob($this->user))
+            )
+            ->put(
+                'product-tour-email',
+                WorkflowStep::make($workflow)
+                    ->after([
+                        'welcome-email' => CarbonInterval::days(3)
+                    ])
+                    ->action(function (): void {
+                        // Send another email to your user
+                    })
+            )
+            ->put(
+                'send-promo-code',
+                WorkflowStep::make($workflow)
+                    ->after([
+                        'product-tour-email' => CarbonInterval::days(7),
+                    ])
+                    ->when(fn() => $this->user->hasNotPurchased())
+                    ->action(function (): void {
+                        //
+                    })
+            );
+    }
+}
+```
+
+### Running your workflow
+
+```php
+use Elegantly\Workflow\Commands\RunWorkflowsCommand;
+
+$schedule->command(RunWorkflowsCommand::class)->everyMinutes();
 ```
 
 ## Testing

@@ -43,8 +43,8 @@ class TestWorkflowDefinition extends WorkflowDefinition
                 WorkflowStep::make($workflow)
                     ->after([
                         'welcome' => CarbonInterval::minutes(10),
-                        'welcome-bis',
                     ])
+                    ->after('welcome-bis')
                     ->action(function (): void {
                         //
                     })

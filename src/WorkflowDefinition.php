@@ -3,10 +3,13 @@
 namespace Elegantly\Workflow;
 
 use Elegantly\Workflow\Models\Workflow;
+use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
 
 abstract class WorkflowDefinition
 {
+    use SerializesModels;
+
     /**
      * @return Collection<string, WorkflowStep>
      */
