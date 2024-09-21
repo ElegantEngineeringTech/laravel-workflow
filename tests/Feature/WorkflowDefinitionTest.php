@@ -9,6 +9,8 @@ it('can run a workflow', function () {
 
     $workflow = $definition->start();
 
+    expect($workflow->type)->toBe(TestWorkflowDefinition::class);
+    expect($workflow->definition)->toBeInstanceOf(TestWorkflowDefinition::class);
     expect($workflow->exists)->toBe(true);
     expect($workflow->items)->toHaveLength(2);
 

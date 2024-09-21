@@ -15,6 +15,7 @@ use Throwable;
 
 /**
  * @property int $id
+ * @property string $type Definition class
  * @property ?string $step
  * @property WorkflowDefinition $definition Serialized Workflow definition
  * @property Collection<int, WorkflowItem> $items
@@ -69,12 +70,12 @@ class Workflow extends Model
     }
 
     /**
-     * @return Attribute<WorkflowDefinition, WorkflowDefinition|string>
+     * @return Attribute<WorkflowDefinition, WorkflowDefinition>
      */
     protected function definition(): Attribute
     {
         return Attribute::make(
-            get: function ($value) {
+            get: function (mixed $value) {
                 if (is_string($value)) {
                     return unserialize($value);
                 }
@@ -84,15 +85,11 @@ class Workflow extends Model
 
                 return null;
             },
-            set: function ($value) {
-                if (is_string($value)) {
-                    return $value;
-                }
-                if ($value instanceof WorkflowDefinition) {
-                    return serialize($value);
-                }
-
-                return null;
+            set: function (WorkflowDefinition $value) {
+                return [
+                    'definition' => serialize($value),
+                    'type' => $value::class,
+                ];
             },
         );
     }

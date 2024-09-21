@@ -11,6 +11,9 @@ return new class extends Migration
         Schema::create('workflows', function (Blueprint $table) {
             $table->id();
 
+            // definition class
+            $table->string('type')->index();
+
             // serialized class
             $table->longText('definition');
 
