@@ -2,6 +2,7 @@
 
 namespace Elegantly\Workflow;
 
+use Elegantly\Workflow\Commands\RunWorkflowsCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -17,6 +18,7 @@ class WorkflowServiceProvider extends PackageServiceProvider
         $package
             ->name('laravel-workflow')
             ->hasConfigFile()
+            ->hasCommand(RunWorkflowsCommand::class)
             ->hasMigration('create_workflows_table');
     }
 }
