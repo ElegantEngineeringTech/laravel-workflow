@@ -245,6 +245,8 @@ class Workflow extends Model
 
     public function run(): void
     {
+        $this->definition->beforeRun($this);
+
         if (
             $this->isFinished() ||
             $this->isFailed() ||
@@ -253,17 +255,9 @@ class Workflow extends Model
             return;
         }
 
-        if ($this->definition->shouldCancel($this)) {
-            $this->markAsCanceled();
-
-            return;
-        }
-
         if (! $this->definition->shouldRun($this)) {
             return;
         }
-
-        $this->definition->beforeRun($this);
 
         $this->definition->run($this);
 

@@ -30,11 +30,6 @@ abstract class WorkflowDefinition
         return $workflow;
     }
 
-    public function shouldCancel(Workflow $workflow): bool
-    {
-        return false;
-    }
-
     public function shouldRun(Workflow $workflow): bool
     {
         return true;
