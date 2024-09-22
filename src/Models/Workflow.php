@@ -10,8 +10,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Collection as SupportCollection;
-use Illuminate\Support\Facades\Bus;
-use Throwable;
 
 /**
  * @property int $id
@@ -245,86 +243,30 @@ class Workflow extends Model
         return $this;
     }
 
-    public function run(
-        ?string $connection = null,
-        ?string $queue = null,
-    ): void {
-        /** @var ?string $connection */
-        $connection = $connection ?? config('workflow.queue_connection');
-        /** @var ?string $queue */
-        $queue = $queue ?? config('workflow.queue');
-
+    public function run(): void
+    {
         if (
             $this->isFinished() ||
             $this->isFailed() ||
-            $this->isCanceled() ||
-            ! $this->definition->shouldRun()
+            $this->isCanceled()
         ) {
             return;
         }
 
-        if ($this->definition->shouldCancel()) {
+        if ($this->definition->shouldCancel($this)) {
             $this->markAsCanceled();
 
             return;
         }
 
-        $readySteps = $this->definition
-            ->steps($this)
-            ->filter(function ($step, $name) {
-                return ! $this->isStepPending($name) &&
-                    ! $this->isStepFinished($name) &&
-                    ! $this->isStepCanceled($name) &&
-                    ! $this->isStepFailed($name) &&
-                    $step->isReady();
-            });
-
-        if ($readySteps->isEmpty()) {
+        if (! $this->definition->shouldRun($this)) {
             return;
         }
 
-        $items = $this->items()->createMany(
-            $readySteps->map(fn ($step, $name) => [
-                'name' => $name,
-                'dispatched_at' => now(),
-            ])
-        );
+        $this->definition->beforeRun($this);
 
-        $this->items->push(...$items);
+        $this->definition->run($this);
 
-        /**
-         * @var array<int, string> $stepNames
-         */
-        $stepNames = $readySteps->keys()->toArray();
-        $workflowId = $this->id;
-
-        Bus::chain([
-            ...$readySteps->flatMap(function ($step, $name) use ($workflowId) {
-                return [
-                    $step->action,
-                    function () use ($workflowId, $name) {
-                        $workflow = Workflow::query()->findOrFail($workflowId);
-                        $workflow->markStepAsFinished($name);
-                    },
-                ];
-            }),
-        ])
-            ->catch(function (Throwable $e) use ($workflowId, $stepNames) {
-                $workflow = Workflow::query()->findOrFail($workflowId);
-
-                $item = $workflow
-                    ->items
-                    ->whereIn('name', $stepNames)
-                    ->firstWhere('finished_at', null);
-
-                if ($item) {
-                    $workflow->markStepAsFailed($item->name);
-                } else {
-                    $workflow->markAsFailed();
-                }
-            })
-            ->onConnection($connection)
-            ->onQueue($queue)
-            ->dispatch();
+        $this->definition->afterRun($this);
     }
 }
