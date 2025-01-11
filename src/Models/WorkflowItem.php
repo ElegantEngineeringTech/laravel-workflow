@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Elegantly\Workflow\Models;
 
 use Carbon\Carbon;
@@ -37,7 +39,7 @@ class WorkflowItem extends Model
     }
 
     /**
-     * @return BelongsTo<Workflow, WorkflowItem>
+     * @return BelongsTo<Workflow, $this>
      */
     public function workflow(): BelongsTo
     {

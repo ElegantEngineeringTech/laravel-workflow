@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Elegantly\Workflow\Tests\TestWorkflowDefinition;
 
 it('can run a workflow', function () {

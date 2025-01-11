@@ -10,3 +10,6 @@ parameters:
     tmpDir: build/phpstan
     checkOctaneCompatibility: true
     checkModelProperties: true
+    noEnvCallsOutsideOfConfig: false
+    ignoreErrors:
+        - '#Trait Elegantly\\Workflow\\Concerns\\HasWorkflows is used zero times and is not analysed.#'

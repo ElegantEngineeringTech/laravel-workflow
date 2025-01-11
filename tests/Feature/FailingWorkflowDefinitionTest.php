@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Elegantly\Workflow\Tests\TestFailingWorkflowDefinition;
 
 it('catches workflow failure', function () {
@@ -18,7 +20,7 @@ it('catches workflow failure', function () {
     try {
         $workflow->run();
     } catch (\Throwable $th) {
-        //throw $th;
+        // throw $th;
     }
 
     expect($workflow->items)->toHaveLength(2);

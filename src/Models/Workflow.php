@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Elegantly\Workflow\Models;
 
 use Carbon\Carbon;
@@ -52,7 +54,7 @@ class Workflow extends Model
     }
 
     /**
-     * @return HasMany<WorkflowItem >
+     * @return HasMany<WorkflowItem, $this>
      */
     public function items(): HasMany
     {
@@ -60,7 +62,7 @@ class Workflow extends Model
     }
 
     /**
-     * @return MorphTo<Model, Workflow>
+     * @return MorphTo<Model, $this>
      */
     public function model(): MorphTo
     {
@@ -157,7 +159,7 @@ class Workflow extends Model
                 $this->items
                     ->where('finished_at', '!=', null)
                     ->where('canceled_at', '!=', null)
-                    ->pluck('name')
+                    ->map(fn ($item) => $item->name)
             );
     }
 
