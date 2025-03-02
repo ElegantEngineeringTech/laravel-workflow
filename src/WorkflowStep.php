@@ -91,8 +91,7 @@ class WorkflowStep
                 is_string($delay)
             ) {
                 $this->when(
-                    fn () => (bool) $this
-                        ->workflow
+                    fn () => (bool) $this->workflow
                         ->getItem($delay)
                         ?->isFinished()
                 );
@@ -103,10 +102,10 @@ class WorkflowStep
                 $delay instanceof CarbonInterval
             ) {
                 $this->when(
-                    fn () => (bool) $this
-                        ->workflow
+                    fn () => (bool) $this->workflow
                         ->getItem($step)
                         ?->finished_at
+                        ?->clone()
                         ?->add($delay)
                         ?->isPast()
                 );
