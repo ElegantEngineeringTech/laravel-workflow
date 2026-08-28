@@ -19,7 +19,7 @@ it('catches workflow failure', function () {
 
     try {
         $workflow->run();
-    } catch (\Throwable $th) {
+    } catch (Throwable $th) {
         // throw $th;
     }
 

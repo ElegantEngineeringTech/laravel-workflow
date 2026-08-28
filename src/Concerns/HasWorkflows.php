@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Elegantly\Workflow\Concerns;
 
+use Elegantly\Workflow\Models\Workflow;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 trait HasWorkflows
